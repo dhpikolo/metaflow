@@ -102,7 +102,7 @@ def step(
     input_paths_filename=None,
     split_index=None,
     opt_namespace=None,
-    retry_count=None,
+    retry_count=None,  # TODO remove this from interface, look for effecting codepaths
     max_user_code_retries=None,
     clone_only=None,
     clone_run_id=None,
@@ -155,6 +155,12 @@ def step(
         ctx.obj.monitor,
         ubf_context,
     )
+    latest_done_attempt = task.flow_datastore.get_latest_done_attempt(
+        run_id=run_id, step_name=step_name, task_id=task_id
+    )
+    if latest_done_attempt:
+        retry_count = latest_done_attempt + 1
+
     if clone_only:
         task.clone_only(
             step_name,
